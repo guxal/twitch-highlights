@@ -222,10 +222,10 @@ async function getVodHighlights(vodLink) {
 
 // Paso 11:
 
-async function getVodsList() {
-  const streamerslist = await getUsernames("twitch_usernames.txt");
+async function getVodsList(filename) {
+  const streamerslist = await getUsernames(filename);
   const vodslist = [];
-  for(const streamer of streamerslist){
+  for (const streamer of streamerslist) {
     let vod = await getUserVideos(streamer);
     console.log(vod);
     let vodarray = [];
@@ -236,7 +236,6 @@ async function getVodsList() {
   return vodslist;
 }
 
-// Paso 12: Procesar todos los VODs y generar sus highlights
 async function getAllLinks(vodList) {
   vodList.forEach((vodLink) => {
     getVodHighlights(vodLink);
@@ -244,11 +243,24 @@ async function getAllLinks(vodList) {
 }
 
 // === EJECUCIÓN PRINCIPAL ===
-console.log("[START] Obteniendo token de Twitch...");
-TWITCH_CLIENT_TOKEN = (await retrieveTwitchClientKey(twitch_client_id, twitch_client_secret)).access_token;
+async function main() {
+  console.log("[INFO] Script de highlights de Twitch");
+  const filename = process.argv[2]; // El segundo argumento del CLI
+  if (!filename) {
+    console.error("Por favor proporciona el nombre del archivo. Ej: node script.js twitch_usernames.txt");
+    process.exit(1);
+  }
 
-console.log("[STEP] Obteniendo lista de VODs...");
-const vodList = await getVodsList();
+  console.log("[INFO] Archivo de usuarios:", filename);
 
-console.log("[STEP] Procesando highlights de cada VOD...");
-getAllLinks(vodList);
+  console.log("[START] Obteniendo token de Twitch...");
+  TWITCH_CLIENT_TOKEN = (await retrieveTwitchClientKey(twitch_client_id, twitch_client_secret)).access_token;
+
+  console.log("[STEP] Obteniendo lista de VODs...");
+  const vodList = await getVodsList(filename);
+
+  console.log("[STEP] Procesando highlights de cada VOD...");
+  getAllLinks(vodList);
+}
+
+main();
